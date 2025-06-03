@@ -1,7 +1,5 @@
-.vercel
 ._idea
 ._frontend
 **/node_modules
-**/.vercel
 **/.expo
 *.iml
