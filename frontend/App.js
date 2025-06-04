@@ -35,7 +35,7 @@ const LoanInputForm = () => {
     }
 
     try {
-      const response = await fetch('https://mortgage-calculator-1z1xdqp08-vikram-modugus-projects.vercel.app/api/hello', {
+      const response = await fetch('https://mortgage-calculator-4inptdclh-vikram-modugus-projects.vercel.app/api/mortgage', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -131,21 +131,32 @@ const LoanInputForm = () => {
 
           <View style={styles.inputGroup}>
             <Text style={styles.label}>Start Date of the Loan</Text>
-            <TouchableOpacity
-              style={styles.dateButton}
-              onPress={() => setShowDatePicker(true)}
-            >
-              <Text style={styles.dateButtonText}>
-                {formatDateMMDDYYYY(startDate)}
-              </Text>
-            </TouchableOpacity>
-            {showDatePicker && (
-              <DateTimePicker
-                value={startDate}
-                mode="date"
-                display="default"
-                onChange={onChangeDate}
+            {Platform.OS === 'web' ? (
+              <input
+                type="date"
+                style={{ ...styles.input, paddingVertical: 8 }}
+                value={startDate.toISOString().substring(0, 10)}
+                onChange={e => setStartDate(new Date(e.target.value))}
               />
+            ) : (
+              <>
+                <TouchableOpacity
+                  style={styles.dateButton}
+                  onPress={() => setShowDatePicker(true)}
+                >
+                  <Text style={styles.dateButtonText}>
+                    {formatDateMMDDYYYY(startDate)}
+                  </Text>
+                </TouchableOpacity>
+                {showDatePicker && (
+                  <DateTimePicker
+                    value={startDate}
+                    mode="date"
+                    display="default"
+                    onChange={onChangeDate}
+                  />
+                )}
+              </>
             )}
           </View>
 
