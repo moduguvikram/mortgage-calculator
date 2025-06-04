@@ -78,7 +78,7 @@ npm start
   ```sh
   cd frontend
   vercel
-  ```sh  
+  ```
 
 ### Backend
 
@@ -86,7 +86,7 @@ npm start
 ```sh
   cd backend
   vercel
-  ```sh
+  ```
 ---
 
 ## API Example
