@@ -4,7 +4,7 @@ A cross-platform mortgage calculator built with React Native (Web/iOS/Android) a
 
 # Application Access
 
-Web application can be accessed using https://mortgage-1vhp5ripq-vikram-modugus-projects.vercel.app/
+Web application can be accessed using https://mortgage-f3p2ukf39-vikram-modugus-projects.vercel.app/
 
 ---
 
