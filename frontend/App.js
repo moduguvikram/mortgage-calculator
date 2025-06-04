@@ -12,6 +12,9 @@ import {
   KeyboardAvoidingView
 } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
+
+
+
 function formatDateMMDDYYYY(date) {
   const mm = String(date.getMonth() + 1).padStart(2, '0');
   const dd = String(date.getDate()).padStart(2, '0');
@@ -27,7 +30,57 @@ const LoanInputForm = () => {
   const [extraPayment, setExtraPayment] = useState(200);
   const [startDate, setStartDate] = useState(new Date());
   const [showDatePicker, setShowDatePicker] = useState(false);
+  const [chatInput, setChatInput] = useState('');
+  const [chatMessages, setChatMessages] = useState([]);
+  const [chatLoading, setChatLoading] = useState(false);
+  const GEMINI_API_KEY = process.env.EXPO_PUBLIC_GEMINI_API_KEY;
 
+
+  const sendChatMessage = async () => {
+    if (!chatInput.trim()) return;
+    const userMessage = { role: 'user', content: chatInput };
+    const updatedMessages = [...chatMessages, userMessage];
+    setChatMessages(updatedMessages);
+    setChatLoading(true);
+
+    try {
+      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          contents: [
+            ...updatedMessages.map(msg => ({
+              role: msg.role,
+              parts: [{ text: msg.content }]
+            }))
+          ]
+        }),
+      });
+      const data = await response.json();
+      const geminiReply = data.candidates?.[0]?.content?.parts?.[0]?.text;
+      if (geminiReply) {
+      setChatMessages([
+        ...updatedMessages,
+        { role: 'assistant', content: geminiReply }
+      ]);
+    } else {
+      setChatMessages([
+        ...updatedMessages,
+        { role: 'assistant', content: 'Sorry, there was an error.' }
+      ]);
+    }
+  } catch (err) {
+    setChatMessages([
+      ...updatedMessages,
+      { role: 'assistant', content: 'Sorry, there was an error.' }
+    ]);
+  }
+    setChatInput('');
+    setChatLoading(false);
+  };
+  
   const handleSubmit = async () => {
     if (!principal || !interestRate || !loanTerm) {
       Alert.alert('Missing Fields', 'Please fill in all required fields.');
@@ -189,10 +242,43 @@ const LoanInputForm = () => {
               </View>
             </View>
           )}
+          <View style={styles.chatContainer}>
+            <Text style={styles.chatTitle}>💬 Chat with Mortgage Assistant</Text>
+            <ScrollView style={styles.chatMessages} contentContainerStyle={{ padding: 8 }}>
+              {chatMessages.map((msg, idx) => (
+                <View key={idx} style={{ alignSelf: msg.role === 'user' ? 'flex-end' : 'flex-start', marginBottom: 6 }}>
+                  <Text style={{
+                    backgroundColor: msg.role === 'user' ? '#007AFF' : '#eee',
+                    color: msg.role === 'user' ? '#fff' : '#222',
+                    borderRadius: 8,
+                    padding: 8,
+                    maxWidth: 250,
+                  }}>
+                    {msg.content}
+                  </Text>
+                </View>
+              ))}
+              {chatLoading && <Text style={{ color: '#888' }}>Thinking...</Text>}
+            </ScrollView>
+            <View style={styles.chatInputRow}>
+              <TextInput
+                style={styles.chatInput}
+                value={chatInput}
+                onChangeText={setChatInput}
+                placeholder="Ask me anything about mortgages..."
+                onSubmitEditing={sendChatMessage}
+                editable={!chatLoading}
+              />
+              <TouchableOpacity style={styles.chatSendButton} onPress={sendChatMessage} disabled={chatLoading}>
+                <Text style={{ color: '#fff', fontWeight: 'bold' }}>Send</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
+  
 };
 
 const styles = StyleSheet.create({
@@ -289,8 +375,53 @@ const styles = StyleSheet.create({
     color: '#222',
     flex: 1,
     textAlign: 'right',
-  },
+  },chatContainer: {
+  marginTop: 32,
+  backgroundColor: '#f9f9f9',
+  borderRadius: 12,
+  padding: 12,
+  shadowColor: '#000',
+  shadowOffset: { width: 0, height: 1 },
+  shadowOpacity: 0.05,
+  shadowRadius: 2,
+  elevation: 1,
+},
+chatTitle: {
+  fontWeight: 'bold',
+  fontSize: 16,
+  marginBottom: 8,
+  color: '#007AFF',
+},
+chatMessages: {
+  maxHeight: 180,
+  marginBottom: 8,
+},
+chatInputRow: {
+  flexDirection: 'row',
+  alignItems: 'center',
+},
+chatInput: {
+  flex: 1,
+  backgroundColor: '#fff',
+  borderRadius: 6,
+  paddingHorizontal: 12,
+  paddingVertical: 8,
+  fontSize: 15,
+  borderColor: '#ccc',
+  borderWidth: 1,
+  marginRight: 8,
+},
+chatSendButton: {
+  backgroundColor: '#007AFF',
+  borderRadius: 6,
+  paddingVertical: 10,
+  paddingHorizontal: 16,
+  alignItems: 'center',
+  justifyContent: 'center',
+},
 });
+
+
 
 
 export default LoanInputForm;
