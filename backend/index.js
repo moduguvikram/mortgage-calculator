@@ -5,11 +5,11 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-app.get('/api/hello', (req, res) => {
+app.get('/api/mortgage', (req, res) => {
   res.status(200).json({ message: 'Hello from the backend!' });
 });
 
-app.post('/api/hello', (req, res) => {
+app.post('/api/mortgage', (req, res) => {
   try {
     const {
       principal,
