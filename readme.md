@@ -87,7 +87,7 @@ npm start
 
 ## API Example
 
-**POST** `/api/hello`
+**POST** `/api/mortgage`
 
 ```json
 {
